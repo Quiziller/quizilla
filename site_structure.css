@@ -3,7 +3,7 @@
     	  */
 
 #wrapper {
-	background: #fff url(/ce/github/get/roleplayzilla-official/master/bg_wrapper.gif) 0 0 repeat-y;
+	background: #fff url(https://raw.githubusercontent.com/Quiziller/quizilla/master/bg_wrapper.gif) 0 0 repeat-y;
 	margin: auto;
 	position: relative;
     width: 946px;
@@ -17,7 +17,7 @@
 	}
 #header{
     height: 11em;
-	margin-bottom: 62px; /* make room for absolutley position nav originally was: 4em */
+	margin-bottom: 62px;
 	position: relative;
 	}
 
@@ -40,8 +40,6 @@
 }
 
 
-/* slightly different for theme creator.  a little more room for sidebar form. */
-
 body.createtheme #primary	{
 	width: 568px;
 	}
@@ -51,8 +49,6 @@ body.createtheme #secondary {
 	width: 340px;
 	}
 
-
-/* three col, secondary on left, terciary on right
 
 
 .interior #primary {
