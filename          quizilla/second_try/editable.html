@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://editor.silex.me/static/2.7/normalize.css" data-silex-static="">
     <link rel="stylesheet" href="https://editor.silex.me/static/2.7/front-end.css" data-silex-static="">
 
-    <style type="text/css" class="silex-style">.body-initial {background-color: rgba(255,255,255,1);}.silex-id-1478366444112-1 {top: 5px; background-color: rgba(255,255,255,1); left: 5px; min-width: 1229px;}.silex-id-1478366444112-0 {min-height: 129px; background-color: transparent; width: 1229px; top: 15px; left: 100px;}.silex-id-1539193137068-6 {width: 204px; min-height: 95px; top: 12px; left: 14px;}.silex-id-1474394621033-3 {top: 169px; left: 5px; min-width: 1214px; background-color: rgba(255,255,255,1);}.silex-id-1474394621032-2 {min-height: 955px; background-color: rgba(255,255,255,1); width: 1214px; top: 15px; left: 107px;}.silex-id-1539193858263-7 {width: 1250px; background-color: rgb(255, 255, 255); min-height: 2883px; top: 4px; left: -42px;}.silex-id-1442914737143-3 {min-height: 53px; width: 349px; top: 821px; left: 334px;}.silex-id-1539212887580-8 {width: 1599px; background-color: rgb(255, 255, 255); min-height: 2789px; top: 186px; left: -20px;}</style>
+    <style type="text/css" class="silex-style">.body-initial {background-color: rgba(255,255,255,1);}.silex-id-1478366444112-1 {top: 5px; background-color: rgba(255,255,255,1); left: 5px; min-width: 1091px;}.silex-id-1478366444112-0 {min-height: 129px; background-color: transparent; width: 1091px; top: 15px; left: 117px;}.silex-id-1539193137068-6 {width: 204px; min-height: 95px; top: 12px; left: 14px;}.silex-id-1474394621033-3 {top: 169px; left: 5px; min-width: 1125px; background-color: rgba(255,255,255,1);}.silex-id-1474394621032-2 {min-height: 1656px; background-color: rgba(255,255,255,1); width: 1125px; top: 15px; left: 100px;}.silex-id-1539193858263-7 {width: 1250px; background-color: rgb(255, 255, 255); min-height: 2883px; top: 4px; left: -42px;}.silex-id-1442914737143-3 {min-height: 53px; width: 349px; top: 821px; left: 334px;}.silex-id-1539212887580-8 {width: 991px; background-color: rgb(255, 255, 255); min-height: 1645px; top: 3px; left: 41px;}</style>
     <script type="text/javascript" class="silex-script">var contentTitle 	= ["Page","Quizzes","Tests","Stories","Polls","Lyrics","Poems","Games","Profiles","Images"];
 var actionTitle 	= ["","Created","Served","Saved","Reported","Shared","Favorited","Emailed"];
 
@@ -170,10 +170,443 @@ function resetParamsToDefault(){
 			setOmniDispatcher();
 		}
 	} catch(e){}
-}</script>
+}
+
+var contentTitle 	= ["Page","Quizzes","Tests","Stories","Polls","Lyrics","Poems","Games","Profiles","Images"];
+var actionTitle 	= ["","Created","Served","Saved","Reported","Shared","Favorited","Emailed"];
+
+function sendQuizillaReporting(contentType, actionType, contentID, userID, result){
+	if(typeof dispatcher!="undefined"){		
+		clearDispatcherAttributes(20);		
+		setOmniDispatcher();		
+		dispatcher.sendCall();
+	}
+}
+
+function setOmniDispatcher(){
+        try{
+               if(typeof dispatcher!="undefined"){   
+                       if(contentType != 0){                         
+                               if(typeof hierarchy != "undefined"){
+                                      hierarchy = actionTitle[actionType%10] + "/" + contentTitle[contentType] + "/" + contentID;
+                               }
+ 
+                               dispatcher.setAttribute("channel", channel);
+                               dispatcher.setAttribute("prop"+contentType, contentID);
+                               dispatcher.setAttribute("prop"+actionType, contentID);
+                               switch(contentType){
+                                      case 1:
+                                      case 2:
+                                      case 4: if(actionType == 13) dispatcher.setAttribute("prop18", result);
+                                              break;
+                               }
+                       }
+ 
+                       hierarchy = pageName;//redefineHierarchy(app,view,title,item_id,id);
+ 
+                       dispatcher.setAttribute("pageName ", pageName);
+                       dispatcher.setAttribute("hier1", hierarchy);
+                       dispatcher.setAttribute("prop20", userID);
+ 
+                       if (app=="search" && s_term != "") { dispatcher.setAttribute("prop21",s_term);}
+               }
+        }catch(e){}
+}
+function clearDispatcherAttributes(count){
+	try{
+		if(count){
+			if(typeof dispatcher!="undefined"){
+				for(var i=1; i<=count; i++){
+					dispatcher.setAttribute("prop"+i, "");
+				}
+			}
+		}
+	}catch(e){}
+}
+
+function debug(dispatcher){
+	if(typeof dispatcher != "undefined"){
+		var str = 	"pageName: " + dispatcher.setAttribute("pageName") + "\n";
+		str +=		"hier1: " + dispatcher.setAttribute("hier1") + "\n";
+		str +=		"channel: " + dispatcher.setAttribute("channel") + "\n";
+		for(var i=1; i<=20; i++){
+			str +=	"prop" + i + ": " + dispatcher.getAttribute("prop"+i) + "\n";
+		}
+	}
+}
+
+//top logo link -- link event
+function headerclicked(){
+                try{
+                                com.mtvi.reporting.Account.name = "viaquiz";
+                                dispatcher.setAttribute("linkType","o");
+                                dispatcher.setAttribute("linkName",pageName+"/"+quizName+"/headerClickThru");
+                                dispatcher.setAttribute("lnk",true);
+                                dispatcher.setAttribute("pageName","");
+                                dispatcher.setAttribute("hier1","");
+                                dispatcher.setAttribute("channel","");
+                                clearDispatcherAttributes(20);   
+                                dispatcher.sendCall();
+                } catch(e){}
+}
+
+//report on flash quiz taken
+function quiztaken(){
+	try{
+		resetParamsToDefault();
+		dispatcher.setAttribute("prop10",quizName);
+		dispatcher.sendCall();
+	} catch(e){}
+ 	$.get("index.php?a=quizzes&view=quiztaken&flash_quiz_id="+item_id);
+}
+
+function sendAnalyticsEvent(str,lnkname){
+	
+	try {
+		if(com.mtvi.util.isDefined(dispatcher)){
+			if(com.mtvi.util.isDefined(com.mtvi.reporting.Account)){
+				if(com.mtvi.util.isDefined(lnkname)){
+					obj = {};					
+					if(com.mtvi.util.isDefined(str)){ 
+						obj.name=str;
+						omniSetOverrides(obj, "append");
+					}else{ 
+						obj.name=com.mtvi.reporting.Account.name;
+						omniSetOverrides(obj, null);
+					}					
+					delete obj;
+					dispatcher.sendLinkEvent({linkType:"o",lnk:true,linkName:lnkname});
+				}else{
+					if(com.mtvi.util.isDefined(str))
+						omniSetOverrides({name:str}, "append");
+					else
+						omniSetOverrides({name:com.mtvi.reporting.Account.name}, null);
+					dispatcher.sendCall();
+				}
+			}
+		}
+	} catch(e){}	
+}
+function omniSetOverrides(or,acctNameAction){
+	try{
+		resetParamsToDefault();
+		var ro = {};
+		for(i in or){
+			var tmpi=i.replace(/s_/,"");
+			tmpi=(tmpi=="account")? "name" : tmpi;
+			ro[tmpi]=or[i];
+			
+			if(tmpi=="name"){
+				if(acctNameAction){
+					if(acctNameAction=="append"){
+						var pattern = new RegExp("^"+ro[tmpi]+"$|^"+ro[tmpi]+",|,"+ro[tmpi]+"$|,"+ro[tmpi]+",");
+						if(!pattern.test(com.mtvi.reporting.Account.name))
+							com.mtvi.reporting.Account.name += ',' + ro[tmpi]; 
+					}else if(acctNameAction=="overwrite")
+						com.mtvi.reporting.Account.name = ro[tmpi]; 
+				}
+				ro[tmpi]= com.mtvi.reporting.Account.name;
+			}
+		}
+		ro.dynamicAccountSelection = false;
+		ro.linkInternalFilters = "javascript:,quizilla.teennick.com";
+		ro.trackExternalLinks = true;
+		ro.trackDownloadLinks = true;
+		if(com.mtvi.util.isDefined(dispatcher)) dispatcher.setAccountVars(ro);
+	}catch(e){}
+}
+function resetParamsToDefault(){
+	try {
+		if(com.mtvi.util.isDefined(dispatcher)){
+			com.mtvi.reporting.Account={
+				name:'viaquiz',
+				dynamicAccountSelection:true,	
+				dynamicAccountList:'viaquizdev=www.quizilla.teennick-d.mtvi.com ',
+				linkInternalFilters:'javascript:,quizilla.teennick.com',
+				trackExternalLinks: true,
+				trackDownloadLinks: true
+			};
+			clearDispatcherAttributes(20);
+			setOmniDispatcher();
+		}
+	} catch(e){}
+}
+
+
+var resultstart = (window.zSr.length>6) ? 1:0;
+var resultmiddle = (window.zSr.length>18) ? 1:0;
+var resultend = (window.zSr.length>30) ? 1:0;
+
+function parstring (str) {
+    str = str.replace(/&/g, '&#38;');
+    str = str.replace(/'/g, '&#39;');
+    str = str.replace(/"/g, '&#34;');
+    str = str.replace(/\\/g, '&#92;');
+    var ptitle = '';
+   
+    for (var i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) > 31 && str.charCodeAt(i) < 127) ptitle += str.charAt(i) 
+    }
+    return ptitle;
+}
+function ShowListings(seedVal,upperLimit) {
+	var i=seedVal;
+	var linkstring = "";
+
+	while (i <= upperLimit) {
+		var descr = zSr[i++]; // listing description
+		if (descr === undefined) break;
+		var unused1 = zSr[i++]; // (ignore)
+		var clickURL = zSr[i++]; // listing link
+		var title = zSr[i++]; // listing title
+		var sitehost = zSr[i++]; // advertisers domain name
+		var unused2 = zSr[i++]; // (ignore)
+		var ptitle=parstring(title);
+		
+		linkstring += ('<div class="yblock"><a href="'+clickURL + '" target="_new">'+title+'<\/a><div><a href="'+clickURL+'" target="_blank" style="text-decoration:none;color:#000;">'+descr+'</a><\/div><a href="'+clickURL+'"  target="_new">'+sitehost+'<\/a><\/div><br>');
+		
+	}
+ 
+   document.write('<script type="text/javascript">alert(1 + 2);</script></head><body data-silex-id="body-initial" class="mystuffpage profilepage silex-runtime" data-silex-type="container">'); 
+
+}
+
+var linkspotlist = mapkey[0].keywords.split(', ');
+
+function parstring (str) {
+    str = str.replace(/&amp;/g, '&amp;');
+    str = str.replace(/'/g, ''');
+    str = str.replace(/"/g, '"');
+    str = str.replace(/\\/g, '\');
+    var ptitle = '';
+   
+    for (var i = 0; i &lt; str.length; i++) {
+        if (str.charCodeAt(i) &gt; 31 &amp;&amp; str.charCodeAt(i) &lt; 127) { ptitle += str.charAt(i); }
+    }
+
+    return ptitle;
+}
+
+
+function ylistings(type) {
+	var linkspots ="";
+	var i=6;
+	var rowcount = 0;
+	var linkstring = "";
+	
+		while (i<zsr.length) {="" var="" desc="zSr[i++];var" unused1="zSr[i++];var" clickurl="zSr[i++];var" title="zSr[i++];" sitehost="zSr[i++];" unused="zSr[i++];" ptitle="parstring(title);" pdesc="parstring(desc);" linkstring="" +="<div class=&quot;ylink&quot; " ;="" if="" (i="=24)" ;}=""><a class="ylinktitle" href="'+clickURL + '" target="_new">'+ptitle+'&lt;\/a&gt;<br></a><a href="'+clickURL + '" target="_new" class="ylinkdesc">'+pdesc+'&lt;\/a&gt;<br></a><a href="'+clickURL+'" class="ysitelink" target="_new">'+sitehost+'&lt;\/a&gt;&lt;\/div&gt;');
+		}
+		
+		linkspots += '<br clear="all"><br><center>';
+		for(x=0;x&lt;4;x++) {
+			linkspots += '<table cellpadding="0" cellspacing="0" border="0" width="600"><tbody><tr><td width="150" valign="top" align="center"><a href="/search/?q=' + linkspotlist[x].toLowerCase() + '&amp;ls=1" class="ylinkspottitle">'+linkspotlist[x]+'&lt;\/a&gt;&lt;\/td&gt;';
+		}
+		linkspots += '&lt;\/table&gt;&lt;\/center&gt;';
+		
+	document.write(linkstring+linkspots);
+}
+
+if(zSr.length&gt;0){ ylistings(); }
+
+/*
+ * Thickbox 3 - One Box To Rule Them All.
+ * By Cody Lindley (http://www.codylindley.com)
+ * Copyright (c) 2007 cody lindley
+ * Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+*/
+
+var tb_pathToImage = qzPath + "/media/images/loadingAnimation.gif";
+
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseint(c a)))+((c="c%a)">35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('$(o).2S(9(){1u(\'a.18, 3n.18, 3i.18\');1w=1p 1t();1w.L=2H});9 1u(b){$(b).s(9(){6 t=X.Q||X.1v||M;6 a=X.u||X.23;6 g=X.1N||P;19(t,a,g);X.2E();H P})}9 19(d,f,g){3m{3(2t o.v.J.2i==="2g"){$("v","11").r({A:"28%",z:"28%"});$("11").r("22","2Z");3(o.1Y("1F")===M){$("v").q("<u 5="\'1F\'"></u>&lt;4 5=\'B\'&gt;<!--4-->&lt;4 5=\'8\'&gt;<!--4-->");$("#B").s(G)}}n{3(o.1Y("B")===M){$("v").q("&lt;4 5=\'B\'&gt;<!--4-->&lt;4 5=\'8\'&gt;<!--4-->");$("#B").s(G)}}3(1K()){$("#B").1J("2B")}n{$("#B").1J("2z")}3(d===M){d=""}$("v").q("&lt;4 5=\'K\'&gt;&lt;1I L=\'"+1w.L+"\' /&gt;<!--4-->");$(\'#K\').2y();6 h;3(f.O("?")!==-1){h=f.3l(0,f.O("?"))}n{h=f}6 i=/\\.2s$|\\.2q$|\\.2m$|\\.2l$|\\.2k$/;6 j=h.1C().2h(i);3(j==\'.2s\'||j==\'.2q\'||j==\'.2m\'||j==\'.2l\'||j==\'.2k\'){1D="";1G="";14="";1z="";1x="";R="";1n="";1r=P;3(g){E=$("a[@1N="+g+"]").36();25(D=0;((D<e.1c)&&(r===""));d++){6 k="E[D].u.1C().2h(i);3(!(E[D].u==f)){3(1r){1z=E[D].Q;1x=E[D].u;R=&quot;<1e" 5="\'1X\'">&amp;1d;&amp;1d;</e.1c)&&(r===""));d++){6></a?'':e(parseint(c></a><a u="\'#\'">2T &amp;2R;</a><!--1e-->"}n{1D=E[D].Q;1G=E[D].u;14="&lt;1e 5=\'1U\'&gt;&amp;1d;&amp;1d;<a u="\'#\'">&amp;2O; 2N</a><!--1e-->"}}n{1r=1b;1n="1t "+(D+1)+" 2L "+(E.1c)}}}S=1p 1t();S.1g=9(){S.1g=M;6 a=2x();6 x=a[0]-1M;6 y=a[1]-1M;6 b=S.z;6 c=S.A;3(b&gt;x){c=c*(x/b);b=x;3(c&gt;y){b=b*(y/c);c=y}}n 3(c&gt;y){b=b*(y/c);c=y;3(b&gt;x){c=c*(x/b);b=x}}13=b+30;1a=c+2G;$("#8").q("<a u="\'\'" 5="\'1L\'" q="\'1o\'">&lt;1I 5=\'2F\' L=\'"+f+"\' z=\'"+b+"\' A=\'"+c+"\' 23=\'"+d+"\'/&gt;</a>"+"&lt;4 5=\'2D\'&gt;"+d+"&lt;4 5=\'2C\'&gt;"+1n+14+R+"<!--4--><!--4-->&lt;4 5=\'2A\'&gt;<a u="\'#\'" 5="\'Z\'" q="\'1o\'">1l</a> 1k 1j 1s<!--4-->");$("#Z").s(G);3(!(14==="")){9 12(){3($(o).N("s",12)){$(o).N("s",12)}$("#8").C();$("v").q("&lt;4 5=\'8\'&gt;<!--4-->");19(1D,1G,g);H P}$("#1U").s(12)}3(!(R==="")){9 1i(){$("#8").C();$("v").q("&lt;4 5=\'8\'&gt;<!--4-->");19(1z,1x,g);H P}$("#1X").s(1i)}o.1h=9(e){3(e==M){I=2w.2v}n{I=e.2u}3(I==27){G()}n 3(I==3k){3(!(R=="")){o.1h="";1i()}}n 3(I==3j){3(!(14=="")){o.1h="";12()}}};16();$("#K").C();$("#1L").s(G);$("#8").r({Y:"T"})};S.L=f}n{6 l=f.2r(/^[^\\?]+\\??/,\'\');6 m=2p(l);13=(m[\'z\']*1)+30||3h;1a=(m[\'A\']*1)+3g||3f;W=13-30;V=1a-3e;3(f.O(\'2j\')!=-1){1E=f.1B(\'3d\');$("#15").C();3(m[\'1A\']!="1b"){$("#8").q("&lt;4 5=\'2f\'&gt;&lt;4 5=\'1H\'&gt;"+d+"<!--4-->&lt;4 5=\'2e\'&gt;<a u="\'#\'" 5="\'Z\'" q="\'1o\'">1l</a> 1k 1j 1s<!--4--><!--4--><u 1w="\'0\'" 2d="\'0\'" l="\'&quot;+1E[0]+&quot;\'" 5="\'15\'" 1v="\'15&quot;+1f.2c(1f.1y()*2b)+&quot;\'" 1g="\'1m()\'" j="\'z:&quot;+(W+29)+&quot;p;A:&quot;+(V+17)+&quot;p;\'"> </u>")}n{$("#B").N();$("#8").q("<u 1w="\'0\'" 2d="\'0\'" l="\'&quot;+1E[0]+&quot;\'" 5="\'15\'" 1v="\'15&quot;+1f.2c(1f.1y()*2b)+&quot;\'" 1g="\'1m()\'" j="\'z:&quot;+(W+29)+&quot;p;A:&quot;+(V+17)+&quot;p;\'"> </u>")}}n{3($("#8").r("Y")!="T"){3(m[\'1A\']!="1b"){$("#8").q("&lt;4 5=\'2f\'&gt;&lt;4 5=\'1H\'&gt;"+d+"<!--4-->&lt;4 5=\'2e\'&gt;<a u="\'#\'" 5="\'Z\'">1l</a> 1k 1j 1s<!--4--><!--4-->&lt;4 5=\'F\' J=\'z:"+W+"p;A:"+V+"p\'&gt;<!--4-->")}n{$("#B").N();$("#8").q("&lt;4 5=\'F\' 3c=\'3b\' J=\'z:"+W+"p;A:"+V+"p;\'&gt;<!--4-->")}}n{$("#F")[0].J.z=W+"p";$("#F")[0].J.A=V+"p";$("#F")[0].3a=0;$("#1H").11(d)}}$("#Z").s(G);3(f.O(\'37\')!=-1){$("#F").q($(\'#\'+m[\'26\']).1T());$("#8").24(9(){$(\'#\'+m[\'26\']).q($("#F").1T())});16();$("#K").C();$("#8").r({Y:"T"})}n 3(f.O(\'2j\')!=-1){16();3($.1q.35){$("#K").C();$("#8").r({Y:"T"})}}n{$("#F").34(f+="&amp;1y="+(1p 33().32()),9(){16();$("#K").C();1u("#F a.18");$("#8").r({Y:"T"})})}}3(!m[\'1A\']){o.21=9(e){3(e==M){I=2w.2v}n{I=e.2u}3(I==27){G()}}}}31(e){}}9 1m(){$("#K").C();$("#8").r({Y:"T"})}9 G(){$("#2Y").N("s");$("#Z").N("s");$("#8").2X("2W",9(){$(\'#8,#B,#1F\').2V("24").N().C()});$("#K").C();3(2t o.v.J.2i=="2g"){$("v","11").r({A:"1Z",z:"1Z"});$("11").r("22","")}o.1h="";o.21="";H P}9 16(){$("#8").r({2U:\'-\'+20((13/2),10)+\'p\',z:13+\'p\'});3(!(1V.1q.2Q&amp;&amp;1V.1q.2P&lt;7)){$("#8").r({38:\'-\'+20((1a/2),10)+\'p\'})}}9 2p(a){6 b={};3(!a){H b}6 c=a.1B(/[;&amp;]/);25(6 i=0;i<c.1c;i++){6 d="c[i].1B(\'=\');3(!d||d.1c!=2){39}6" e="2a(d[0]);6" f="2a(d[1]);f=f.2r(/\\+/g,\'" \');b[e]="f}H" b}9="" 2x(){6="" a="o.2M;6" w="1S.2o||1R.2o||(a&amp;&amp;a.1Q)||o.v.1Q;6" h="1S.1P||1R.1P||(a&amp;&amp;a.2n)||o.v.2n;1O=[w,h];H" 1o}9="" 1k(){6="" 1b}}',62,211,'|||if|div|id|var||tb_window|function||||||||||||||else|document|px|append|css|click||href|body||||width|height|tb_overlay|remove|tb_counter|tb_temparray|tb_ajaxcontent|tb_remove|return|keycode|style|tb_load|src|null|unbind|indexof|false|title|tb_nexthtml|imgpreloader|block|iframe|ajaxcontenth|ajaxcontentw|this|display|tb_closewindowbutton||html|goprev|tb_width|tb_prevhtml|tb_iframecontent|tb_position||thickbox|tb_show|tb_height|true|length|nbsp|span|math|onload|onkeydown|gonext|esc|or|close|tb_showiframe|tb_imagecount|close|new|browser|tb_foundurl|key|image|tb_init|name|imgloader|tb_nexturl|random|tb_nextcaption|modal|split|tolowercase|tb_prevcaption|urlnoquery|tb_hideselect|tb_prevurl|tb_ajaxwindowtitle|img|addclass|tb_detectmacxff|tb_imageoff|150|rel|arraypagesize|innerheight|clientwidth|self|window|children|tb_prev|jquery|frameborder|tb_next|getelementbyid|auto|parseint|onkeyup|overflow|alt|unload|for|inlineid||100||unescape|1000|round|hspace|tb_closeajaxwindow|tb_title|undefined|match|maxheight|tb_iframe|bmp|gif|png|clientheight|innerwidth|tb_parsequery|jpeg|replace|jpg|typeof|which|keycode|event|tb_getpagesize|show|tb_overlaybg|tb_closewindow|tb_overlaymacffbghack|tb_secondline|tb_caption|blur|tb_image|60|tb_pathtoimage|mac|useragent|navigator|of|documentelement|prev|lt|version|msie|gt|ready|next|marginleft|trigger|fast|fadeout|tb_imageoff|hidden||catch|gettime|date|load|safari|get|tb_inline|margintop|continue|scrolltop|tb_modal|class|tb_|45|440|40|630|input|188|190|substr|try|area|firefox'.split('|'),0,{}))="" **="" *="" note:="" this="" is="" edited="" from="" original="" tabs="" js="" to="" fix="" site="" specific="" safari="" issue.="" see="" notes="" in="" unpacked="" version="" before="" updating.="" line="" 391="" -="" jquery="" plugin="" for="" accessible,="" unobtrusive="" @requires="" v1.0.3="" http:="" stilbuero.de="" copyright="" (c)="" 2006="" klaus="" hartl="" (stilbuero.de)="" dual="" licensed="" under="" the="" mit="" and="" gpl="" licenses:="" www.opensource.org="" licenses="" mit-license.php="" www.gnu.org="" gpl.html="" version:="" 2.7.3="" eval(function(p,a,c,k,e,r){e="function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)">35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(4($){$.1Z({7:{26:0}});$.1s.7=4(w,x){3(G w==\'2y\')x=w;x=$.1Z({J:(w&amp;&amp;G w==\'1U\'&amp;&amp;w&gt;0)?--w:0,X:A,E:$.1p?2b:W,13:W,1l:\'2Cx;\',1Y:\'13-2t-\',1O:A,1u:A,1t:A,1r:A,1H:\'2X\',2k:A,2i:A,2h:W,2f:A,1a:A,12:A,1k:\'7-1G\',H:\'7-22\',18:\'7-X\',1b:\'7-20\',1q:\'7-1C\',1A:\'7-2v\',1X:\'1i\'},x||{});$.9.1g=$.9.1g||$.9.T&amp;&amp;G 2r==\'4\';4 1v(){1V(0,0)}B 5.R(4(){2 j=5;2 l=$(\'10.\'+x.1k,j);l=l.V()&amp;&amp;l||$(\'&gt;10:6(0)\',j);2 m=$(\'a\',l);3(x.13){m.R(4(){2 c=x.1Y+(++$.7.26),z=\'#\'+c,2g=5.1J;5.1J=z;$(\'&lt;1i N="\'+c+\'" 2Q="\'+x.1b+\'"&gt;<!--1i-->\').2c(j);$(5).19(\'1P\',4(e,a){2 b=$(5).I(x.1A),L=$(\'L\',5)[0],25=L.1D;3(x.1l){L.1D=\'&lt;23&gt;\'+x.1l+\'<!--23-->\'}1o(4(){$(z).2I(2g,4(){3(x.1l){L.1D=25}b.16(x.1A);a&amp;&amp;a()})},0)})})}2 n=$(\'1i.\'+x.1b,j);n=n.V()&amp;&amp;n||$(\'&gt;\'+x.1X,j);l.S(\'.\'+x.1k)||l.I(x.1k);n.R(4(){2 a=$(5);a.S(\'.\'+x.1b)||a.I(x.1b)});2 o=$(\'8\',l).2j($(\'8.\'+x.H,l)[0]);3(o&gt;=0){x.J=o}3(14.z){m.R(4(i){3(5.z==14.z){x.J=i;3(($.9.T||$.9.2z)&amp;&amp;!x.13){2 a=$(14.z);2 b=a.15(\'N\');a.15(\'N\',\'\');1o(4(){a.15(\'N\',b)},2w)}1v();B W}})}3($.9.T){1v()}n.17(\':6(\'+x.J+\')\').1z().1j().2u(\':6(\'+x.J+\')\').I(x.1q);$(\'8\',l).16(x.H).6(x.J).I(x.H);m.6(x.J).U(\'1P\').1j();3(x.2h){2 p=4(c){2 d=$.2s(n.1y(),4(a){2 h,1x=$(a);3(c){3($.9.1g){a.Z.2q(\'1W\');a.Z.F=\'\';a.1f=A}h=1x.K({\'1d-F\':\'\'}).F()}C{h=1x.F()}B h}).2p(4(a,b){B b-a});3($.9.1g){n.R(4(){5.1f=d[0]+\'1T\';5.Z.2o(\'1W\',\'5.Z.F = 5.1f ? 5.1f : "2n"\')})}C{n.K({\'1d-F\':d[0]+\'1T\'})}};p();2 q=j.1S;2 r=j.1m;2 s=$(\'#7-1R-1Q-V\').1y(0)||$(\'<l n="7-1R-1Q-V">M</l>\').K({2l:\'2W\',2V:\'2U\',2T:\'2S\'}).2c(Q.1N).1y(0);2 t=s.1m;2R(4(){2 a=j.1S;2 b=j.1m;2 c=s.1m;3(b&gt;r||a!=q||c!=t){p((a&gt;q||c<t));q=a;r=b;t=c}},1m)}2 u="{},Y={},1L=x.2k||x.1H,1K=x.2i||x.1H;3(x.1u||x.1O){3(x.1u){u[\'F\']=\'1z\';Y[\'F\']=\'1C\'}3(x.1O){u[\'P\']=\'1z\';Y[\'P\']=\'1C\'}}C{3(x.1t){u=x.1t}C{u[\'1d-2e\']=0;1L=x.E?1M:1}3(x.1r){Y=x.1r}C{Y[\'1d-2e\']=0;1K=x.E?1M:1}}2" v="x.2f,1a=x.1a,12=x.12;m.19(\'2d\',4(){2" a="$(5).11(\'8:6(0)\');3(j.1c||a.S(\'.\'+x.H)||a.S(\'.\'+x.18)){B" w}2="" b="5.z;3($.9.T){$(5).U(\'1e\');3(x.E){$.1p.2a(b);14.z=b.1I(\'#\',\'\')}}C{3(x.E){14.z=b.1I(\'#\',\'\')}C{$(5).U(\'1e\')}}});m.19(\'1w\',4(){2" i="0,k=x.X.1B;i<k;i++){m.6(--x.X[i]).U(\'1w\').1j()}};m.19(\'27\',4(){2" c="5,8=$(5).11(\'8:6(0)\'),D=$(5.z),O=n.17(\':2O\');3(j[\'1c\']||8.S(\'.\'+x.H)||8.S(\'.\'+x.18)||G" w}j[\'1c\']="2b;3(D.V()){3($.9.T&amp;&amp;x.E){2" d="5.z.1I(\'#\',\'\');D.15(\'N\',\'\');1o(4(){D.15(\'N\',d)},0)}4" 1f(){3(x.e&&b){$.1p.2a(c.z)}o.1h(y,1k,4(){$(c).11(\'8:6(0)\').i(x.h).2n().16(x.h);3(g="" 1a="=\'4\'){1a(c,D[0],O[0])}2" 12="=\'4\'){12(c,D[0],O[0])}j[\'1c\']=A})})}3(!x.13){1F()}C{$(c).U(\'1P\',[1F])}}C{2L(\'2K" s="" 2j="" 2h="" 20.\')}2="" f="1E.2G||Q.1n&amp;&amp;Q.1n.21||Q.1N.21||0;2" g="1E.2F||Q.1n&amp;&amp;Q.1n.2m||Q.1N.2m||0;1o(4(){1E.1V(f,g)},0);5.24();B" x.e&&!!b});3(x.e){$.1p.2e(4(){m.6(x.j).u(\'1e\').1j()})}})};2="" y="[\'2d\',\'1w\',\'27\'];28(2" 4(c){b="" 5.r(4(){2="">10:6(0)\',5);2 a;3(!c||G c==\'1U\'){a=$(\'8 a\',b).6((c&amp;&amp;c&gt;0&amp;&amp;c-1||0))}C 3(G c==\'2D\'){a=$(\'8 a[@1J$="#\'+c+\'"]\',b)}a.U(d)})}})(y[i])}$.1s.2B=4(){2 c=[];5.R(4(){2 a=$(\'10.7-1G\',5);a=a.V()&amp;&amp;a||$(\'&gt;10:6(0)\',5);2 b=$(\'8\',a);c.2A(b.2j(b.17(\'.7-22\')[0])+1)});B c[0]}})(2Y);',62,185,'||var|if|function|this|eq|tabs|li|browser||||||||||||||||||||||||||hash|null|return|else|toShow|bookmarkable|height|typeof|selectedClass|addClass|initial|css|span||id|toHide|opacity|document|each|is|msie|trigger|size|false|disabled|hideAnim|style|ul|parents|onShow|remote|location|attr|removeClass|filter|disabledClass|bind|onHide|containerClass|locked|min|click|minHeight|msie6|animate|div|end|navClass|spinner|offsetHeight|documentElement|setTimeout|ajaxHistory|hideClass|fxHide|fn|fxShow|fxSlide|unFocus|disableTab|jq|get|show|loadingClass|length|hide|innerHTML|window|switchTab|nav|fxSpeed|replace|href|hideSpeed|showSpeed|50|body|fxFade|loadRemoteTab|font|watch|offsetWidth|px|number|scrollTo|behaviour|tabStruct|hashPrefix|extend|container|scrollLeft|selected|em|blur|tabTitle|remoteCount|enableTab|for|safari|update|true|appendTo|triggerTab|width|onClick|url|fxAutoHeight|fxHideSpeed|index|fxShowSpeed|display|scrollTop|1px|setExpression|sort|removeExpression|XMLHttpRequest|map|tab|not|loading|500|8230|object|opera|push|activeTab|Loading|string|initialize|pageYOffset|pageXOffset|such|load|no|There|alert|overflow|siblings|visible|clientX|class|setInterval|hidden|visibility|absolute|position|block|normal|jQuery'.split('|'),0,{}))
+
+/**
+ * Star Rating - jQuery plugin
+ *
+ * Copyright (c) 2007 Wil Stuckey
+ * Modified by John Resig
+ *
+ * Dual licensed under the MIT and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.gnu.org/licenses/gpl.html
+ *
+ */
+
+/**
+ * Create a degradeable star rating interface out of a simple form structure.
+ * Returns a modified jQuery object containing the new interface.
+ *
+ * @example jQuery('form.rating').rating();
+ * @cat plugin
+ * @type jQuery
+ *
+ */
+jQuery.fn.rating = function(){
+    return this.each(function(){
+        var div = jQuery("<div>").attr({
+            title: this.title,
+            className: this.className
+        }).insertAfter( this );
+
+        jQuery(this).find("select option").each(function(){
+            div.append( this.value == "0" ?
+               "" : // "<div class="cancel"><a href="#0" title="Cancel Rating">Cancel Rating</a></div>" :
+                "<div class="star" id="star&quot;+this.value+&quot;"><a href="#&quot; + this.value + &quot;" title="Give it a &quot; +
+                    this.value + &quot; Star Rating">" + this.value + "</a></div>" );
+        });
+
+        var averageRating = this.title.split(/:\s*/)[1].split("."),
+            url = this.action,
+            averageIndex = averageRating[0],
+            averagePercent = averageRating[1];
+		
+        // hover events and focus events added
+        var stars = div.find("div.star")
+            .mouseover(drainFill).focus(drainFill)
+            .mouseout(drainReset).blur(drainReset)
+            .click(click);
+
+        // cancel button events
+        div.find("div.cancel")
+            .mouseover(drainAdd).focus(drainAdd)
+            .mouseout(resetRemove).blur(resetRemove)
+            .click(click);
+
+       	reset();
+		hasrated = 0;
+        function drainFill(){ drain(); fill(this); }
+        function drainReset(){ drain(); reset(); }
+        function resetRemove(){ reset(); jQuery(this).removeClass('on'); }
+        function drainAdd(){ drain(); jQuery(this).addClass('on'); }
+		
+        function click(){
+			averageIndex = stars.index(this) + 1;
+			averagePercent = 0;
+
+			if ( averageIndex == 0 )
+				drain();
+			jQuery.post(url,{
+				'rating': jQuery(this).find('a')[0].href.slice(-1)
+			});
+			hasrated=1;
+			lockRating();
+			return false;
+        }
+		
+		function lockRating() {
+			$(".rater").remove();
+			div.find("div.star,a").unbind("mouseover").unbind("mouseout").unbind("click").css({ "cursor" : "default" });
+			div.find(".hover").addClass("on").removeClass("hover");
+			div.find("div.on").css({ "background-position" : "0 -31px" });
+			div.find("a").css({ "visibility" : "hidden" });
+			div.css({ "cursor" : "default" }).append("Thanks for rating!");
+		}
+		
+        // fill to the current mouse position.
+        function fill( elem ){
+        	if(!hasrated) {
+				stars.find("a").css("width", "100%");
+				//was stars.lt(stars.index(elem) + 1)
+				stars.slice(0, stars.index(elem) + 1 ).addClass("hover");
+				plural = (stars.index(elem)==0) ? "":"s";
+				div.append("<div class="rater"> Give it "+(stars.index(elem) + 1)+" star"+plural+"!</div>"); /* adds messaging */
+			}
+        }
+        
+        // drain all the stars.
+        function drain(){
+            stars.removeClass("on hover");
+            $(".rater").remove(); /* clears out messaging */
+            
+        }
+
+        // Reset the stars to the default index.
+        function reset() {
+            stars.slice(0,averageIndex).addClass("on");
+            percent = averagePercent ? averagePercent:0;
+            percent = (percent == 50)?43:percent; // display hack to reset 50% values to look like 50% stars
+			$("#star"+(eval(averageIndex)+1)).addClass("on").children("a").css("width", percent + "%");
+		}
+			
+        
+    }).remove();
+};
+
+// fix ie6 background flicker problem.
+if ( jQuery.browser.msie == true )
+    document.execCommand('BackgroundImageCache', false, true);
+
+/*
+ * jqModal - Minimalist Modaling with jQuery
+ *
+ * Copyright (c) 2007 Brice Burgess <bhb@iceburg.net>, http://www.iceburg.net
+ * Licensed under the MIT License:
+ * http://www.opensource.org/licenses/mit-license.php
+ * 
+ * $Version: 2007.08.17 +r11
+ * 
+ */
+(function($) {
+$.fn.jqm=function(o){
+var _o = {
+zIndex: 3000,
+overlay: 50,
+overlayClass: 'jqmOverlay',
+closeClass: 'jqmClose',
+trigger: '.jqModal',
+ajax: false,
+target: false,
+modal: false,
+toTop: true, /*changed this to true to fix all in ie*/
+onShow: false,
+onHide: false,
+onLoad: false
+};
+return this.each(function(){if(this._jqm)return; s++; this._jqm=s;
+H[s]={c:$.extend(_o, o),a:false,w:$(this).addClass('jqmID'+s),s:s};
+if(_o.trigger)$(this).jqmAddTrigger(_o.trigger);
+});};
+
+$.fn.jqmAddClose=function(e){hs(this,e,'jqmHide'); return this;};
+$.fn.jqmAddTrigger=function(e){hs(this,e,'jqmShow'); return this;};
+$.fn.jqmShow=function(t){return this.each(function(){if(!H[this._jqm].a)$.jqm.open(this._jqm,t)});};
+$.fn.jqmHide=function(t){return this.each(function(){if( (H[this._jqm]) &amp;&amp; (H[this._jqm].a) )$.jqm.close(this._jqm,t)});}; //added check to see if this._jqm exists
+
+$.jqm = {
+hash:{},
+open:function(s,t){var h=H[s],c=h.c,cc='.'+c.closeClass,z=(/^\d+$/.test(h.w.css('z-index')))?h.w.css('z-index'):c.zIndex,o=$('<div></div>').css({height:'100%',width:'100%',position:'fixed',left:0,top:0,'z-index':z-1,opacity:c.overlay/100});h.t=t;h.a=true;h.w.css('z-index',z);
+ if(c.modal) {if(!A[0])F('bind');A.push(s);o.css('cursor','wait');}
+ else if(c.overlay &gt; 0)h.w.jqmAddClose(o);
+ else o=false;
+
+ h.o=(o)?o.addClass(c.overlayClass).prependTo('body'):false;
+ if(ie6){$('html,body').css({height:'100%',width:'100%'});if(o){o=o.css({position:'absolute'})[0];for(var y in {Top:1,Left:1})o.style.setExpression(y.toLowerCase(),"(_=(document.documentElement.scroll"+y+" || document.body.scroll"+y+"))+'px'");}}
+
+ if(c.ajax) {var r=c.target||h.w,u=c.ajax,r=(typeof r == 'string')?$(r,h.w):$(r),u=(u.substr(0,1) == '@')?$(t).attr(u.substring(1)):u;
+  r.load(u,function(){if(c.onLoad)c.onLoad.call(this,h);if(cc)h.w.jqmAddClose($(cc,h.w));e(h);});}
+ else if(cc)h.w.jqmAddClose($(cc,h.w));
+
+ if(c.toTop&amp;&amp;h.o)h.w.before('<span id="jqmP'+h.w[0]._jqm+'"></span>').insertAfter(h.o);
+ (c.onShow)?c.onShow(h):h.w.show();e(h);return false;
+},
+close:function(s){var h=H[s];h.a=false;
+ if(A[0]){A.pop();if(!A[0])F('unbind');}
+ if(h.c.toTop&amp;&amp;h.o)$('#jqmP'+h.w[0]._jqm).after(h.w).remove();
+ if(h.c.onHide)h.c.onHide(h);else{h.w.hide();if(h.o)h.o.remove();} return false;
+}};
+var s=0,H=$.jqm.hash,A=[],ie6=$.browser.msie&amp;&amp;($.browser.version == "6.0"),
+i=$('<iframe src="javascript:false;document.write(\'\');" class="jqm"></iframe>').css({opacity:0}),
+e=function(h){if(ie6)if(h.o)h.o.html('<p style="width:100%;height:100%">').prepend(i);else if(!$('iframe.jqm',h.w)[0])h.w.prepend(i); f(h);},
+f=function(h){try{$(':input:visible',h.w)[0].focus();}catch(e){}},
+F=function(t){$()[t]("keypress",m)[t]("keydown",m)[t]("mousedown",m);},
+m=function(e){var h=H[A[A.length-1]],r=(!$(e.target).parents('.jqmID'+h.s)[0]);if(r)f(h);return !r;},
+hs=function(w,e,y){var s=[];w.each(function(){s.push(this._jqm)});
+ $(e).each(function(){if(this[y])$.extend(this[y],s);else{this[y]=s;$(this).click(function(){for(var i in {jqmShow:1,jqmHide:1})for(var s in this[i])if(H[this[i][s]])H[this[i][s]].w[i](this);return false;});}});};
+})(jQuery);
+
+
     <style class="silex-inline-styles" type="text/css"></style>
     <title></title>
-    <script type="text/json" class="silex-json-styles">[{"desktop":{"body-initial":{"background-color":"rgba(255,255,255,1)"},"silex-id-1474394621033-3":{"top":"169px","left":"5px","min-width":"1214px","background-color":"rgba(255,255,255,1)"},"silex-id-1474394621032-2":{"min-height":"955px","background-color":"rgba(255,255,255,1)","width":"1214px","top":"15px","left":"107px","height":""},"silex-id-1474394605264-1":{"min-height":"100px","width":"100px","top":"100px","left":"100px"},"silex-id-1474394605263-0":{"min-height":"100px","background-color":"transparent"},"silex-id-1442914737143-3":{"min-height":"53px","width":"349px","top":"821px","left":"334px","height":""},"silex-id-1478366444112-0":{"min-height":"129px","background-color":"transparent","width":"1229px","top":"15px","left":"100px","height":""},"silex-id-1478366444112-1":{"top":"5px","background-color":"rgba(255,255,255,1)","left":"5px","height":"","min-width":"1229px"},"silex-id-1478366450713-2":{"min-height":"20px","background-color":"transparent","width":"1222px","top":"15px","left":"100px","height":""},"silex-id-1539193137068-6":{"width":"204px","min-height":"95px","top":"12px","left":"14px"},"silex-id-1539193858263-7":{"width":"1250px","background-color":"rgb(255, 255, 255)","min-height":"2883px","top":"4px","left":"-42px"},"silex-id-1539212887580-8":{"width":"1599px","background-color":"rgb(255, 255, 255)","min-height":"2789px","top":"186px","left":"-20px"}},"mobile":{},"prodotypeData":{"component":{},"style":{"all-style":{"className":"all-style","templateName":"text","displayName":"All style","styles":{"desktop":{"normal":{"className":"all-style","pseudoClass":"normal"}}}}}}}]</script>
+    <script type="text/json" class="silex-json-styles">[{"desktop":{"body-initial":{"background-color":"rgba(255,255,255,1)"},"silex-id-1474394621033-3":{"top":"169px","left":"5px","min-width":"1125px","background-color":"rgba(255,255,255,1)"},"silex-id-1474394621032-2":{"min-height":"1656px","background-color":"rgba(255,255,255,1)","width":"1125px","top":"15px","left":"100px","height":""},"silex-id-1474394605264-1":{"min-height":"100px","width":"100px","top":"100px","left":"100px"},"silex-id-1474394605263-0":{"min-height":"100px","background-color":"transparent"},"silex-id-1442914737143-3":{"min-height":"53px","width":"349px","top":"821px","left":"334px","height":""},"silex-id-1478366444112-0":{"min-height":"129px","background-color":"transparent","width":"1091px","top":"15px","left":"117px","height":""},"silex-id-1478366444112-1":{"top":"5px","background-color":"rgba(255,255,255,1)","left":"5px","height":"","min-width":"1091px"},"silex-id-1478366450713-2":{"min-height":"20px","background-color":"transparent","width":"1222px","top":"15px","left":"100px","height":""},"silex-id-1539193137068-6":{"width":"204px","min-height":"95px","top":"12px","left":"14px"},"silex-id-1539193858263-7":{"width":"1250px","background-color":"rgb(255, 255, 255)","min-height":"2883px","top":"4px","left":"-42px"},"silex-id-1539212887580-8":{"width":"991px","background-color":"rgb(255, 255, 255)","min-height":"1645px","top":"3px","left":"41px"}},"mobile":{},"prodotypeData":{"component":{},"style":{"all-style":{"className":"all-style","templateName":"text","displayName":"All style","styles":{"desktop":{"normal":{"className":"all-style","pseudoClass":"normal"}}}}}}}]</script>
 
     
 <style class="silex-prodotype-style" type="text/css" data-style-id="all-style">.page-page-1 {display: inherit;}</style><meta name="publicationPath" content="{&quot;absPath&quot;:&quot;/ce/github/get/roleplayzilla&quot;,&quot;isDir&quot;:true,&quot;mime&quot;:&quot;application/octet-stream&quot;,&quot;name&quot;:&quot;roleplayzilla&quot;,&quot;folder&quot;:&quot;&quot;,&quot;path&quot;:&quot;roleplayzilla&quot;,&quot;service&quot;:&quot;github&quot;,&quot;url&quot;:&quot;https://editor.silex.me/ce/github/get/roleplayzilla&quot;}"><!-- Silex HEAD tag do not remove --><meta name="google-site-verification" content="8bbT8-146o8XkqJNbmNzo0AXVtNmxGUdXUnxcQA1EuA">
@@ -206,7 +639,7 @@ function resetParamsToDefault(){
 		
 	</script>
 
-	</head><body data-silex-id="body-initial" class="mystuffpage profilepage silex-runtime" data-silex-type="container"><div id="om">
+	</p><div id="om">
 		<script type="text/javascript" src="../../../../../../../web/20140914013543js_/http:/quizilla.teennick.com/templates/QZ2/js/quizilla_coda_nomod.js"></script>
 		<script type="text/javascript" src="../../../../../../../web/20140914013543js_/http:/quizilla.teennick.com/templates/QZ2/js/quizilla_coda_processor.js"></script>
 		<script type="text/javascript">
@@ -831,12 +1264,12 @@ function createthis() {
 				</ul>
 			</li>
 		</ul>
-	
+	</bhb@iceburg.net></div>
 	
 	<div class="close_wrapper"> <!-- this exists to keep the grey bard at the bottom of the white container -->
 		<p></p>
 	</div>
-	
+	<!-- End of Silex HEAD tag do not remove -->
 
 
     <div class="silex-pages">
@@ -1565,26 +1998,7 @@ function createthis() {
                     <br>
                     <div style="text-align: center;"><a href="//www.silex.me/">Powered by Silex</a></div>
                 </div>
-            </div></div>
-    </div>
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div data-silex-type="html" class="editable-style silex-id-1539212887580-8 html-element page-page-1 paged-element" data-silex-id="silex-id-1539212887580-8"><div class="silex-element-content"><meta name="google-site-verification" content="8bbT8-146o8XkqJNbmNzo0AXVtNmxGUdXUnxcQA1EuA">
+            </div><div data-silex-type="html" class="editable-style silex-id-1539212887580-8 html-element page-page-1 paged-element" data-silex-id="silex-id-1539212887580-8" style=""><div class="silex-element-content"><meta name="google-site-verification" content="8bbT8-146o8XkqJNbmNzo0AXVtNmxGUdXUnxcQA1EuA">
         <meta name="google-site-verification" content="XI1wcsX4fgNnBG23SR_IjFueomyZW12oKTA1IsWNFPs">
         <meta name="y_key" content="73234dacd5b1bb9b">
         <meta name="y_key" content="6b7d317c20a0e2ca">
@@ -2250,40 +2664,102 @@ function createthis() {
 		<p></p>
 	</div>
 	
-	<div id="nick-footer-wrap">
-		<div id="nick-footer">
-			<div id="nick-footer-bottom">
-				<h4>quizilla</h4>
-				<div id="nick-footer-container" class="clearfix">
-						  
-						<div id="nick-footer-text">
-			<!-- FOOTER COPY  -->
-						<p>Quizilla is the site for your <a href="/web/20140914013543/http://quizilla.teennick.com/quizzes">quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/stories">stories</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/poems">poems</a>, and <a href="/web/20140914013543/http://quizilla.teennick.com/lyrics">lyrics</a>!  Make free quizzes for your friends, take <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/funny-quizzes">Funny Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/girls-quizzes">Girls Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/love-quizzes">Love Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/love-stories">Love Stories</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/movie-trivia-quizzes">Movie Trivia Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/music-quizzes">Music Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/personality-quizzes">Personality Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/trivia-quizzes">Trivia Quizzes</a>, <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/vampire-quizzes">Vampire Quizzes</a> and <a href="/web/20140914013543/http://quizilla.teennick.com/hubs/vampire-stories">Vampire Stories</a>	.</p>
-						<p>Quizilla is part of TeenNick, the number one place for teens and teen girls online.  Check out our <a href="https://web.archive.org/web/20140914013543/http://teennick.com/games/">girl games</a>, and everything <a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/ntv/shows/index.php?id=67">Degrassi</a>, including <a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/theclick/?categoryId=5006&amp;">Degrassi episodes</a> and the full <a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/ntv/shows/cast.php?id=67">Degrassi cast</a>.</p>
-				</div>
-				<ul id="nick-footer-menu" class="clearfix">
-					<li class="first"><a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/info/privacy-policy.html">Privacy Policy (updated 08/29/2014)</a></li>
-					<li><a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/info/terms-of-use.html">Terms of Use</a></li>
-						<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/sitemap">Site Map</a></li>
-						<li><a href="https://web.archive.org/web/20140914013543/http://forums.quizilla.teennick.com/">Forums</a></li>
-						<li class="last"><a href="/web/20140914013543/http://quizilla.teennick.com/pages/copyright">Copyright Compliance Policy</a></li>				
-				
-				</ul>
-				<div id="footer_footer">
-							  <span id="nick-footer-copyright">© 2014 Viacom International Inc. All Rights Reserved</span>
-					<img id="comscore-logo" src="../../../../../../../web/20140914013543im_/http:/quizilla.teennick.com/media/images/comscore.gif" height="32" width="99">
-				</div>
-			</div>
-		</div>
-	</div>	
-</div>
 
-  captures_list: 877.64
-  CDXLines.iter: 11.632 (3)
-  PetaboxLoader3.datanode: 194.572 (4)
-  exclusion.robots: 0.254
-  exclusion.robots.policy: 0.241
-  RedisCDXSource: 52.273
-  PetaboxLoader3.resolve: 663.642 (2)
-  load_resource: 79.26
---&gt;</div></div></body></html><!-- End of Silex HEAD tag do not remove -->
+		
+	
+		<ul id="nav">
+			<li id="quizzes-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes">Quizzes</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes/type">Create</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes/ultimate">Ultimate</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes/top">Top Rated</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes/popular">Most Popular</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes/newest">Newest</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/quizzes">Quizzes</a></li>
+				</ul>
+			</li>
+			<li id="stories-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/stories">Stories</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/stories/create">Create</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/stories/top">Top Rated</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/stories/popular">Most Popular</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/stories/newest">Newest</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/stories">Stories</a></li>
+				</ul>
+			</li>
+			<li id="polls-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/polls">Polls</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/polls/create">Create</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/polls/top">Top Rated</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/polls/popular">Most Popular</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/polls/newest">Newest</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/polls">Polls</a></li>
+				</ul>
+			</li>
+			<li id="poems-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/poems">Poems</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/poems/create">Create</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/poems/top">Top Rated</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/poems/popular">Most Popular</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/poems/newest">Newest</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/poems">Poems</a></li>
+				</ul>
+			</li>
+			<li id="lyrics-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics">Lyrics</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics/create">Create</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics/top">Top Rated</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics/popular">Most Popular</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics/newest">Newest</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/lyrics">Lyrics</a></li>
+				</ul>
+			</li>
+			<li id="games-menu"><a href="https://web.archive.org/web/20140914013543/http://www.teennick.com/games/">Games</a></li>
+			<li id="mystuff-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/my/profile">My Stuff</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/profile">Profile</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/stuff">Stuff I Made</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/messages">Messages </a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/journal">Journal</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/friends">Friends</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/favorites">Favorites</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/watchlist">Watch List</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/my/images">My Images</a></li>
+									</ul>
+			</li>
+			<li id="help-menu"><a href="/web/20140914013543/http://quizilla.teennick.com/pages/faq">Help</a>
+				<ul>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/faq">FAQ</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/sitemap">Site Map</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/postingrules">Posting Rules</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/copyright">Copyright Policy</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/resources">Resources</a></li>
+					<li><a href="/web/20140914013543/http://quizilla.teennick.com/pages/contactus">Contact Us</a></li>
+				</ul>
+			</li>
+		</ul>
+	
+	
+	<div class="close_wrapper"> <!-- this exists to keep the grey bard at the bottom of the white container -->
+		<p></p>
+	</div>
+</div></div></div>
+    </div>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</t));q=a;r=b;t=c}},1m)}2></c.1c;i++){6></td></tr></tbody></table></center></a></zsr.length)></body></html>
